@@ -3,6 +3,7 @@
 Spam trends plotting tool for Thunder Muscle
 Creates visualizations showing spam keyword frequency over time
 """
+
 import json
 import sys
 import argparse
@@ -32,7 +33,8 @@ def create_spam_timeline(
     spam_counts = []
 
     for month_key, data in sorted(monthly_data.items()):
-        if data["total_emails"] > 5:  # Only include months with meaningful data
+        # Only include months with meaningful data
+        if data["total_emails"] > 5:
             try:
                 date_obj = datetime.strptime(month_key, "%Y-%m")
                 dates.append(date_obj)
@@ -109,9 +111,9 @@ def create_keyword_breakdown(
         print("No keyword data found")
         return
 
-    # Sort by frequency
+    # Sort by frequency and take top 10
     sorted_keywords = sorted(keyword_totals.items(), key=lambda x: x[1], reverse=True)
-    keywords = [k for k, v in sorted_keywords[:10]]  # Top 10
+    keywords = [k for k, v in sorted_keywords[:10]]
     counts = [v for k, v in sorted_keywords[:10]]
 
     # Create bar chart
@@ -164,7 +166,8 @@ def create_yearly_heatmap(
 
     for year, data in yearly_data.items():
         year_int = int(year)
-        if year_int >= 2010:  # Focus on post-2010 when marketing spam became prevalent
+        # Focus on post-2010 when marketing spam became prevalent
+        if year_int >= 2010:
             all_years.add(year_int)
             for keyword in data.get("keyword_matches", {}):
                 # Skip unsubscribe_bait to avoid GDPR false positives
@@ -183,16 +186,11 @@ def create_yearly_heatmap(
     for keyword in keywords_list:
         row = []
         for year in years_list:
-            if year >= 2010:  # Only include post-2010 data
-                year_data = yearly_data.get(str(year), {})
-                keyword_count = year_data.get("keyword_matches", {}).get(keyword, 0)
-                total_emails = year_data.get("total_emails", 1)
-                percentage = (
-                    (keyword_count / total_emails * 100) if total_emails > 0 else 0
-                )
-                row.append(percentage)
-            else:
-                row.append(0)
+            year_data = yearly_data.get(str(year), {})
+            keyword_count = year_data.get("keyword_matches", {}).get(keyword, 0)
+            total_emails = year_data.get("total_emails", 1)
+            percentage = (keyword_count / total_emails * 100) if total_emails > 0 else 0
+            row.append(percentage)
         matrix.append(row)
 
     # Create heatmap
@@ -264,15 +262,15 @@ def main():
 
     # Generate plots based on type
     if args.plot_type in ["timeline", "all"]:
-        timeline_file = output_dir / "spam_timeline.png"
+        timeline_file = output_dir / "timeline.png"
         create_spam_timeline(spam_data, timeline_file, args.title, args.display)
 
     if args.plot_type in ["keywords", "all"]:
-        keywords_file = output_dir / "spam_keywords.png"
+        keywords_file = output_dir / "keywords.png"
         create_keyword_breakdown(spam_data, keywords_file, args.title, args.display)
 
     if args.plot_type in ["heatmap", "all"]:
-        heatmap_file = output_dir / "spam_heatmap.png"
+        heatmap_file = output_dir / "heatmap.png"
         create_yearly_heatmap(spam_data, heatmap_file, args.title, args.display)
 
 

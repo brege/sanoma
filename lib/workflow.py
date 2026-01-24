@@ -2,6 +2,7 @@
 """
 YAML workflow runner for Thunder Muscle analysis pipelines
 """
+
 import yaml
 import subprocess
 import sys
@@ -38,36 +39,33 @@ def find_tool_script(action):
     if action in tm_actions:
         return ["python3", "tm.py", action]
 
-    # Check analyzers directory
-    analyzer_path = Path("analyzers") / f"{action}.py"
-    if analyzer_path.exists():
-        return ["python3", str(analyzer_path)]
+    # Map old action names to new single-word script names
+    action_map = {
+        "analyze_temporal": "timeline",
+        "analyze_domains": "domains",
+        "analyze_spam_keywords": "spam",
+        "plot_temporal": "timeline",
+        "plot_spam_trends": "spam",
+        "backup_profile": "backup",
+    }
 
-    # Check plotters directory
-    plotter_path = Path("plotters") / f"{action}.py"
-    if plotter_path.exists():
-        return ["python3", str(plotter_path)]
+    # Check if action needs mapping
+    script_name = action_map.get(action, action)
+
+    # Check analysis directory
+    analysis_path = Path("analysis") / f"{script_name}.py"
+    if analysis_path.exists():
+        return ["python3", str(analysis_path)]
+
+    # Check plot directory
+    plot_path = Path("plot") / f"{script_name}.py"
+    if plot_path.exists():
+        return ["python3", str(plot_path)]
 
     # Check tools directory
-    tool_path = Path("tools") / f"{action}.py"
+    tool_path = Path("tools") / f"{script_name}.py"
     if tool_path.exists():
         return ["python3", str(tool_path)]
-
-    # Check for underscore variants (analyze_temporal -> analyze_temporal.py)
-    if action.startswith("analyze_"):
-        analyzer_path = Path("analyzers") / f"{action}.py"
-        if analyzer_path.exists():
-            return ["python3", str(analyzer_path)]
-
-    if action.startswith("plot_"):
-        plotter_path = Path("plotters") / f"{action}.py"
-        if plotter_path.exists():
-            return ["python3", str(plotter_path)]
-
-    if action.startswith("backup_"):
-        tool_path = Path("tools") / f"{action}.py"
-        if tool_path.exists():
-            return ["python3", str(tool_path)]
 
     return None
 
@@ -97,8 +95,8 @@ def build_command(action, params):
         if "input" in params:
             cmd.append(params["input"])
 
-        # For analyze_domains, add compare_pattern as positional arg
-        if action == "analyze_domains" and "compare_pattern" in params:
+        # For domains analyzer, add compare_pattern as positional arg
+        if action in ["analyze_domains", "domains"] and "compare_pattern" in params:
             cmd.append(params["compare_pattern"])
 
         # Add all other parameters as flags

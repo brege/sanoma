@@ -2,6 +2,7 @@
 """
 Domain analysis tool using tm.py API and lib output adapters
 """
+
 import json
 import subprocess
 import sys
@@ -112,7 +113,10 @@ def main():
         "--format",
         "json",
     ]
-    subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"Error filtering emails: {result.stderr}")
+        sys.exit(1)
 
     with open("/tmp/compare_emails.json", "r") as f:
         compare_emails = json.load(f)

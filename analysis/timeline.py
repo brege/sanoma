@@ -2,6 +2,7 @@
 """
 Temporal analysis tool using tm.py API and lib output adapters
 """
+
 import json
 import sys
 import argparse

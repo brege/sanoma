@@ -39,4 +39,4 @@ steps:
       compare_pattern: "wsu.edu"
       pattern: "unsubscribe"
       threshold: 0.90
-      output: "output/analysis/unsubscribe_analysis.json"
+      output: "output/analysis/unsubscribe.json"

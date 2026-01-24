@@ -1,19 +1,15 @@
 # user assets
-assets/
+data/
 output/
 
 # config
-config.yaml
+config.y*ml
 config.yml
 
-# normal python junk
-venv/
-
-.Pipfile
-.Pipfile.lock
-
+# python
+.venv
+*.egg-info
 *.pyc
 *.pyo
-
 __pycache__
 */__pycache__/*

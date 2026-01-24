@@ -3,6 +3,7 @@
 Spam keyword analysis tool for Thunder Muscle
 Analyzes frequency of marketing/spam keywords over time
 """
+
 import json
 import sys
 import argparse
@@ -125,7 +126,9 @@ def main():
 
     args = parser.parse_args()
 
-    # Default spam keyword patterns
+    # Regex patterns matching common marketing/spam keywords
+    # Each pattern targets a specific spam category using word boundaries (\b)
+    # to match whole words only, with pipes (|) for alternatives
     default_patterns = {
         "survey": r"\b(survey|questionnaire|feedback|review)\b",
         "rate_us": r"\b(rate\s+us|rating|review\s+us|tell\s+us\s+what)\b",
@@ -171,7 +174,8 @@ def main():
         )
 
         for year, data in yearly_sorted[:5]:
-            if data["total_emails"] > 10:  # Only show years with meaningful data
+            # Only show years with meaningful data
+            if data["total_emails"] > 10:
                 print(
                     f"  {year}: {data['spam_emails']}/{data['total_emails']} "
                     f"({data['spam_percentage']:.1f}%)"

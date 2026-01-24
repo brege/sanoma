@@ -12,13 +12,13 @@ steps:
     action: "analyze_spam_keywords"
     params:
       input: "assets/complete_dataset.json"
-      output: "output/analysis/spam_keyword_analysis.json"
+      output: "output/analysis/spam_keywords.json"
       format: "json"
 
   - name: "plot_spam_trends"
     action: "plot_spam_trends"
     params:
-      input: "output/analysis/spam_keyword_analysis.json"
+      input: "output/analysis/spam_keywords.json"
       plot_type: "all"
       output_dir: "output/plots/spam"
       title: "Marketing Spam Trends Analysis"

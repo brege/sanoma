@@ -22,28 +22,28 @@ steps:
     action: "filter"
     params:
       input: "assets/complete_dataset.json"
-      output: "output/datasets/wsu_with_body.json"
+      output: "output/datasets/wsu_body.json"
       domain: "wsu.edu"
       has_body: true
       format: "json"
-  
+
   - name: "temporal_analysis_yearly"
     action: "analyze_temporal"
     params:
-      input: "output/datasets/wsu_with_body.json"
+      input: "output/datasets/wsu_body.json"
       analysis: "year"
-      output: "output/analysis/wsu_yearly_analysis.csv"
+      output: "output/analysis/wsu_yearly.csv"
       format: "csv"
-  
+
   - name: "temporal_analysis_monthly_2016"
     action: "analyze_temporal"
     params:
-      input: "output/datasets/wsu_with_body.json"
+      input: "output/datasets/wsu_body.json"
       analysis: "month"
       year: 2016
       output: "output/analysis/wsu_2016_monthly.json"
       format: "json"
-  
+
   - name: "unsubscribe_analysis_wsu"
     action: "analyze_domains"
     params:
@@ -51,5 +51,5 @@ steps:
       compare_pattern: "wsu.edu"
       pattern: "unsubscribe"
       threshold: 0.85
-      output: "output/analysis/wsu_unsubscribe_domains.json"
+      output: "output/analysis/wsu_unsubscribe.json"
       format: "json"

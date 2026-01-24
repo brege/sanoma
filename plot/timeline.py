@@ -2,6 +2,7 @@
 """
 Temporal plotting tool for Thunder Muscle analysis results
 """
+
 import json
 import sys
 import argparse
@@ -109,7 +110,8 @@ def create_year_over_year_histogram(
     if display_method in ["show", "both"]:
         plt.show()
     else:
-        plt.close()  # Close if not showing
+        # Close figure if not displaying
+        plt.close()
 
     # Show summary stats
     total_by_year = pivot_df.sum(axis=0).sort_index()
@@ -171,7 +173,8 @@ def create_simple_timeline(
     if display_method in ["show", "both"]:
         plt.show()
     else:
-        plt.close()  # Close if not showing
+        # Close figure if not displaying
+        plt.close()
 
 
 def main():
@@ -228,7 +231,7 @@ def main():
 
     # Generate plots
     if args.plot_type in ["histogram", "both"]:
-        histogram_file = output_dir / "year_over_year_histogram.png"
+        histogram_file = output_dir / "histogram.png"
         create_year_over_year_histogram(
             emails, histogram_file, args.title, args.display
         )
