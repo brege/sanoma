@@ -1,0 +1,27 @@
+[project]
+name = "thunder-muscle"
+version = "0.1.0"
+description = "Fast Thunderbird email dataset extraction and analysis using Gloda database."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "PyYAML>=6.0.0",
+  "pandas>=2.0.0",
+  "matplotlib>=3.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.6.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+py-modules = []
+
+[tool.ruff]
+line-length = 88

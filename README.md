@@ -7,12 +7,12 @@ Fast Thunderbird email dataset extraction and analysis using Gloda database.
 ### Dependencies
 ```bash
 # With virtual environment (recommended)
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+uv venv
+source .venv/bin/activate
+uv pip install -e .
 
 # Or system-wide
-pip install -r requirements.txt
+uv pip install .
 ```
 
 ### Thunderbird Profile
