@@ -4,53 +4,53 @@ Fast Thunderbird email dataset extraction and analysis using Gloda database.
 
 ## Setup
 
-### Dependencies
+### Installation
 ```bash
-# With virtual environment (recommended)
-uv venv
-source .venv/bin/activate
-uv pip install -e .
-
-# Or system-wide
-uv pip install .
+uv tool install -e .
 ```
+This installs the `sanoma` command globally without creating a local venv.
 
 ### Thunderbird Profile
-1. You must ensure your Thunderbird profile is indexed.
+1. Ensure your Thunderbird profile is indexed.
    ![Thunderbird Index Settings](docs/img/screenshot.png)
 
-2. Copy Thunderbird's profile folder (e.g. `~/.thunderbird/abc123d.default-release`) to a location of your choice
-   ``` bash
-   cp ~/.thunderbird/*.default-release data/extract/
+2. Copy your Thunderbird profile to `data/profiles/`:
+   ```bash
+   cp -r ~/.thunderbird/*.default-release data/profiles/
    ```
-   If you want to run directly on the in-situ profile on your computer, you must close Thunderbird.
+   If running on the in-situ profile, close Thunderbird first.
 
-3. (Optional) Configure `config.yaml` with your profile name and preferences (see `config.example.yaml`)
+3. Update `config.yaml` with your profile folder name if it differs from `btajokz2.default-release`.
 
 ## Usage
 
-The main script to export the thunderbird profile as a dataset is `tm.py`, which also functions
-as the API layer for other scripts.
+### Command Line Interface
 
-### Data API (`tm.py`)
+Extract complete dataset from Thunderbird:
 ```bash
-# Extract complete dataset
-python3 tm.py extract [--output data/tb-profile.json]
-
-# Filter emails by criteria
-python3 tm.py filter tb-profile.json output.json --domain "*.edu" --year 2023
-
-# Query by content pattern  
-python3 tm.py query tb-profile.json output.json --pattern "unsubscribe"
-
-# Show dataset statistics
-python3 tm.py stats tb-profile.json
+sanoma extract [--output data/extract/all.json]
 ```
 
-### Domain Analysis [`analysis/domains.py`]
+Filter emails by criteria:
 ```bash
-# Analyze domains producing emails with specific patterns
-python3 analysis/domains.py dataset.json compare_domain --pattern "unsubscribe"
+sanoma filter input.json output.json --domain "*.edu" --year 2023
+```
+
+Query emails by content pattern:
+```bash
+sanoma query input.json output.json --pattern "unsubscribe"
+```
+
+Show dataset statistics:
+```bash
+sanoma stats input.json
+```
+
+### Domain Analysis
+
+Analyze domains producing emails with specific patterns:
+```bash
+uv run sanoma/analysis/domains.py data/extract/all.json "*.edu" --pattern "unsubscribe" --threshold 0.95
 ```
 
 ## Output Formats
@@ -63,13 +63,11 @@ Since the tool uses direct "Gloda" (**Glo**bal **Da**tabase) access, the JSON ex
 
 ## Workflows [ `workflows/` ]
 
-**sanoma** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `analysis/`, `plot/`, and `tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
+**sanoma** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `sanoma/analysis/`, `sanoma/plot/`, and `sanoma/tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
 
+Run any workflow:
 ```bash
-# Run any workflow
 sanoma workflow workflows/spam.yaml
-# or (before installation)
-python3 tm.py workflow workflows/wsu.yaml
 ```
 
 I'm not intentionally a data hoarder, I'm just not an aggressive email deleter and filter user. 

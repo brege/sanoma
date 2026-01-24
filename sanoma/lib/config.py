@@ -39,12 +39,7 @@ def get_output_format(config, format_arg=None):
     if format_arg:
         return format_arg
 
-    # New config structure
-    format_val = config.get("defaults", {}).get("output_format")
-    if not format_val:
-        # Backward compatibility
-        format_val = config.get("data", {}).get("default_format", "json")
-
+    format_val = config.get("extract", {}).get("format", "json")
     return format_val
 
 
@@ -65,7 +60,7 @@ def get_directories(config):
 
 def get_output_structure(config):
     """Get output subdirectory structure from config"""
-    structure = config.get("output_structure", {})
+    structure = config.get("output", {})
     return {
         "extract": structure.get("extract", "data/extract"),
         "analysis": structure.get("analysis", "data/analysis"),
@@ -75,7 +70,7 @@ def get_output_structure(config):
 
 def get_default_complete_dataset_path(config):
     """Get path to complete dataset from config"""
-    return config.get("defaults", {}).get("complete_dataset", "data/extract/all.json")
+    return config.get("extract", {}).get("dataset", "data/extract/all.json")
 
 
 def get_default_extract_filename(config):
