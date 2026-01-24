@@ -1,26 +1,14 @@
-name: "Update Dataset"
-description: "Sync profile and regenerate complete dataset"
-
+---
+name: Update Dataset
+description: Extract fresh dataset and verify
 steps:
-  - name: "backup_profile"
-    action: "backup_profile"
+  - name: extract fresh dataset
+    action: extract
     params:
-      source: "~/.thunderbird/btajokz2.default-release"
-      destination: "data/profiles/btajokz2.default-release"
-      exclude_patterns:
-        - "lock"
-        - "*.log"
-        - "cache*"
-        - "startupCache*"
-
-  - name: "extract_fresh_dataset"
-    action: "extract"
-    params:
-      format: "json"
-      output: "data/extract/all.json"
+      format: json
+      output: data/extract/all.json
       force: true
-
-  - name: "verify_dataset"
-    action: "stats"
+  - name: verify dataset
+    action: stats
     params:
-      input: "data/extract/all.json"
+      input: data/extract/all.json

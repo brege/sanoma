@@ -43,7 +43,6 @@ def find_tool_script(action):
         "analyze_spam_keywords": "spam",
         "plot_temporal": "timeline",
         "plot_spam_trends": "spam",
-        "backup_profile": "backup",
     }
 
     # Check if action needs mapping
@@ -58,11 +57,6 @@ def find_tool_script(action):
     plot_path = Path("sanoma/plot") / f"{script_name}.py"
     if plot_path.exists():
         return ["python3", "-m", f"sanoma.plot.{script_name}"]
-
-    # Check tools directory
-    tool_path = Path("sanoma/tools") / f"{script_name}.py"
-    if tool_path.exists():
-        return ["python3", "-m", f"sanoma.tools.{script_name}"]
 
     return None
 

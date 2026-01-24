@@ -1,18 +1,17 @@
-name: "Basic Email Analysis Pipeline"
-description: "Extract emails and filter by domain"
-
+---
+name: Basic Email Analysis Pipeline
+description: Extract emails and filter by domain
 steps:
-  - name: "extract_dataset"
-    action: "extract"
+  - name: extract dataset
+    action: extract
     params:
-      format: "json"
-      output: "data/extract/all.json"
-
-  - name: "filter_wsu_emails"
-    action: "filter"
+      format: json
+      output: data/extract/all.json
+  - name: filter wsu emails
+    action: filter
     params:
-      input: "data/extract/all.json"
-      output: "data/extract/wsu.json"
-      domain: "wsu.edu"
+      input: data/extract/all.json
+      output: data/extract/wsu.json
+      domain: wsu.edu
       has_body: true
-      format: "json"
+      format: json

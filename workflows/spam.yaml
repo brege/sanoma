@@ -1,35 +1,32 @@
-name: "Marketing Spam Analysis"
-description: "Analyze frequency and trends of marketing/survey spam emails over time"
-
+---
+name: Marketing Spam Analysis
+description: Analyze frequency and trends of marketing/survey spam emails over time
 steps:
-  - name: "extract_complete_dataset"
-    action: "extract"
+  - name: extract complete dataset
+    action: extract
     params:
-      format: "json"
-      output: "data/extract/all.json"
-
-  - name: "analyze_spam_keywords"
-    action: "analyze_spam_keywords"
+      format: json
+      output: data/extract/all.json
+  - name: analyze spam keywords
+    action: analyze_spam_keywords
     params:
-      input: "data/extract/all.json"
-      output: "data/analysis/spam/keywords.json"
-      format: "json"
-
-  - name: "plot_spam_trends"
-    action: "plot_spam_trends"
+      input: data/extract/all.json
+      output: data/analysis/spam/keywords.json
+      format: json
+  - name: plot spam trends
+    action: plot_spam_trends
     params:
-      input: "data/analysis/spam/keywords.json"
-      plot_type: "all"
-      output_dir: "data/plots/spam"
-      title: "Marketing Spam Trends Analysis"
-      display: "save"
-
-  - name: "analyze_spam_by_domain"
-    action: "analyze_domains"
+      input: data/analysis/spam/keywords.json
+      plot_type: all
+      output_dir: data/plots/spam
+      title: Marketing Spam Trends Analysis
+      display: save
+  - name: analyze spam by domain
+    action: analyze_domains
     params:
-      input: "data/extract/all.json"
-      compare_pattern: "survey|questionnaire|rate us|feedback"
-      pattern: "survey"
+      input: data/extract/all.json
+      compare_pattern: survey|questionnaire|rate us|feedback
+      pattern: survey
       threshold: 0.5
-      output: "data/analysis/spam/domains.json"
-      format: "json"
+      output: data/analysis/spam/domains.json
+      format: json
