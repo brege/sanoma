@@ -31,10 +31,10 @@ def find_tool_script(action):
     """Find the appropriate script for an action"""
     from pathlib import Path
 
-    # Built-in tm.py actions
+    # Built-in sanoma actions
     tm_actions = ["extract", "filter", "query", "stats"]
     if action in tm_actions:
-        return ["python3", "tm.py", action]
+        return ["sanoma", action]
 
     # Map old action names to new single-word script names
     action_map = {
@@ -48,12 +48,20 @@ def find_tool_script(action):
     # Check if action needs mapping
     script_name = action_map.get(action, action)
 
+    is_plot_action = action.startswith("plot_")
+
+    # Prefer plot directory for plot actions.
+    if is_plot_action:
+        plot_path = Path("sanoma/plot") / f"{script_name}.py"
+        if plot_path.exists():
+            return ["python3", "-m", f"sanoma.plot.{script_name}"]
+
     # Check analysis directory
     analysis_path = Path("sanoma/analysis") / f"{script_name}.py"
     if analysis_path.exists():
         return ["python3", "-m", f"sanoma.analysis.{script_name}"]
 
-    # Check plot directory
+    # Check plot directory for non-plot actions.
     plot_path = Path("sanoma/plot") / f"{script_name}.py"
     if plot_path.exists():
         return ["python3", "-m", f"sanoma.plot.{script_name}"]
@@ -70,7 +78,7 @@ def build_command(action, params):
     cmd = base_cmd[:]
 
     # Handle tm.py specific commands
-    if base_cmd[1] == "tm.py":
+    if base_cmd[0] == "sanoma":
         if action == "filter" and "input" in params and "output" in params:
             cmd.extend([params["input"], params["output"]])
 

@@ -1,6 +1,6 @@
 [project]
 name = "sanoma"
-version = "0.1.0"
+version = "0.2.0"
 description = "Data analysis interface for Thunderbird"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -23,7 +23,7 @@ requires = ["setuptools>=68.0.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["sanoma", "sanoma.lib", "sanoma.analysis", "sanoma.plot", "sanoma.tools"]
+packages = ["sanoma", "sanoma.lib", "sanoma.analysis", "sanoma.plot"]
 py-modules = ["tm"]
 
 [tool.ruff]

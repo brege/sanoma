@@ -1,38 +1,47 @@
 #!/usr/bin/env python3
 """
-Domain analysis tool using tm.py API and lib output adapters
+Domain analysis tool using sanoma lib helpers and output adapters
 """
 
 import json
-import subprocess
-import sys
+import re
 import argparse
 from collections import Counter
 
 from sanoma.lib.output import write_data  # noqa: E402
 from sanoma.lib.config import load_config, get_output_format  # noqa: E402
+from sanoma.lib.query import query_emails  # noqa: E402
 
 
 def get_pattern_emails(input_file, pattern="unsubscribe"):
-    """Get emails containing pattern using tm.py"""
-    cmd = [
-        "python3",
-        "tm.py",
-        "query",
-        input_file,
-        "/tmp/pattern_matches.json",
-        "--pattern",
-        pattern,
-        "--format",
-        "json",
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Error querying emails: {result.stderr}")
-        sys.exit(1)
+    """Get emails containing pattern"""
+    return query_emails(input_file, pattern)
 
-    with open("/tmp/pattern_matches.json", "r") as f:
-        return json.load(f)
+
+def filter_emails_by_domain(emails, domain_pattern):
+    """Filter emails by sender domain pattern"""
+    if domain_pattern.startswith("*."):
+        suffix = domain_pattern[2:].lower()
+        return [
+            email
+            for email in emails
+            if email.get("from_domain", "").lower().endswith(suffix)
+        ]
+
+    try:
+        # Allow regex-based domain matching.
+        domain_regex = re.compile(domain_pattern, re.IGNORECASE)
+        return [
+            email
+            for email in emails
+            if domain_regex.search(email.get("from_domain", ""))
+        ]
+    except re.error:
+        return [
+            email
+            for email in emails
+            if email.get("from_domain", "").lower() == domain_pattern.lower()
+        ]
 
 
 def analyze_top_domains(emails, threshold=0.95):
@@ -93,30 +102,10 @@ def main():
     pattern_emails = get_pattern_emails(args.input_file, args.pattern)
     top_domains, coverage = analyze_top_domains(pattern_emails, args.threshold)
 
-    # Get comparison emails
-    domain_pattern = (
-        args.compare_pattern
-        if not args.compare_pattern.startswith("*.")
-        else args.compare_pattern
-    )
-    cmd = [
-        "python3",
-        "tm.py",
-        "filter",
-        args.input_file,
-        "/tmp/compare_emails.json",
-        "--domain",
-        domain_pattern,
-        "--format",
-        "json",
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Error filtering emails: {result.stderr}")
-        sys.exit(1)
+    with open(args.input_file, "r") as f:
+        all_emails = json.load(f)
 
-    with open("/tmp/compare_emails.json", "r") as f:
-        compare_emails = json.load(f)
+    compare_emails = filter_emails_by_domain(all_emails, args.compare_pattern)
 
     # Prepare analysis results
     analysis_results = {

@@ -104,4 +104,4 @@ data/
 └── profiles        thunderbird profiles like btajokz2.default-release
 ```
 
-Regex domain matching also supported (`*.edu`, `.*\.gov$`)
+Regex domain matching is also supported (`*.edu`, `.*\.gov$`)

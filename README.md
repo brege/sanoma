@@ -6,6 +6,7 @@ Fast Thunderbird email dataset extraction and analysis using Gloda database.
 
 ### Installation
 ```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 uv tool install -e .
 ```
 This installs the `sanoma` command globally without creating a local venv.
