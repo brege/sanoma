@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YAML workflow runner for Thunder Muscle analysis pipelines
+YAML workflow runner for Sanoma analysis pipelines
 """
 
 import yaml
@@ -9,10 +9,7 @@ import sys
 import argparse
 from pathlib import Path
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
-
-from config import load_config  # noqa: E402
+from sanoma.lib.config import load_config
 
 
 def run_command(cmd, description=""):
@@ -53,19 +50,19 @@ def find_tool_script(action):
     script_name = action_map.get(action, action)
 
     # Check analysis directory
-    analysis_path = Path("analysis") / f"{script_name}.py"
+    analysis_path = Path("sanoma/analysis") / f"{script_name}.py"
     if analysis_path.exists():
-        return ["python3", str(analysis_path)]
+        return ["python3", "-m", f"sanoma.analysis.{script_name}"]
 
     # Check plot directory
-    plot_path = Path("plot") / f"{script_name}.py"
+    plot_path = Path("sanoma/plot") / f"{script_name}.py"
     if plot_path.exists():
-        return ["python3", str(plot_path)]
+        return ["python3", "-m", f"sanoma.plot.{script_name}"]
 
     # Check tools directory
-    tool_path = Path("tools") / f"{script_name}.py"
+    tool_path = Path("sanoma/tools") / f"{script_name}.py"
     if tool_path.exists():
-        return ["python3", str(tool_path)]
+        return ["python3", "-m", f"sanoma.tools.{script_name}"]
 
     return None
 

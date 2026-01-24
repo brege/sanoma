@@ -2,6 +2,7 @@
 """
 Workflow runner - wrapper for lib/workflow.py
 """
+
 import sys
 
 # Add lib to path

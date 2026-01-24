@@ -4,16 +4,12 @@ Temporal analysis tool using tm.py API and lib output adapters
 """
 
 import json
-import sys
 import argparse
 from collections import defaultdict
 from datetime import datetime
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
-
-from output import write_data  # noqa: E402
-from config import load_config, get_output_format  # noqa: E402
+from sanoma.lib.output import write_data  # noqa: E402
+from sanoma.lib.config import load_config, get_output_format  # noqa: E402
 
 
 def parse_email_date(date_str):

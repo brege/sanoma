@@ -5,16 +5,12 @@ Analyzes frequency of marketing/spam keywords over time
 """
 
 import json
-import sys
 import argparse
 import re
 from collections import defaultdict
 from datetime import datetime
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
-
-from output import write_data  # noqa: E402
+from sanoma.lib.output import write_data
 
 
 def extract_date_components(date_str):

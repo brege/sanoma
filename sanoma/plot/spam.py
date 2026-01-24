@@ -5,15 +5,12 @@ Creates visualizations showing spam keyword frequency over time
 """
 
 import json
-import sys
 import argparse
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from datetime import datetime
 from pathlib import Path
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 
 def create_spam_timeline(

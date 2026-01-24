@@ -2,6 +2,7 @@
 """
 Output format adapters for Thunder Muscle data
 """
+
 import json
 import csv
 import yaml

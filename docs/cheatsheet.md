@@ -1,6 +1,6 @@
 # Personal Analysis Cheatsheet
 
-Private workflow reference for Thunder Muscle analysis tasks.
+Private workflow reference for Sanoma analysis tasks.
 
 ## Data Extraction
 ```bash
@@ -16,22 +16,22 @@ python3 tm.py extract --format json
 ### Unsubscribe Analysis
 ```bash
 # WSU unsubscribe analysis
-python3 analysis/domains.py data/extract/all.json wsu.edu --pattern unsubscribe
+python3 -m sanoma.analysis.domains data/extract/all.json wsu.edu --pattern unsubscribe
 
 # All .edu domains with 95% coverage
-python3 analysis/domains.py data/extract/all.json "*.edu" --pattern unsubscribe --threshold 0.95
+python3 -m sanoma.analysis.domains data/extract/all.json "*.edu" --pattern unsubscribe --threshold 0.95
 
 # Export top unsubscribe domains to CSV
-python3 analysis/domains.py data/extract/all.json "*.edu" --pattern unsubscribe --output data/analysis/unsubscribe.csv --format csv
+python3 -m sanoma.analysis.domains data/extract/all.json "*.edu" --pattern unsubscribe --output data/analysis/unsubscribe.csv --format csv
 ```
 
 ### Password/Security Analysis
 ```bash
 # Password reset patterns
-python3 analysis/domains.py data/extract/all.json "*.com" --pattern "password|reset" --threshold 0.90
+python3 -m sanoma.analysis.domains data/extract/all.json "*.com" --pattern "password|reset" --threshold 0.90
 
 # Two-factor authentication emails
-python3 analysis/domains.py data/extract/all.json "*.com" --pattern "2fa|two.factor|verification" --threshold 0.85
+python3 -m sanoma.analysis.domains data/extract/all.json "*.com" --pattern "2fa|two.factor|verification" --threshold 0.85
 ```
 
 ### Bulk Filtering

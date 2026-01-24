@@ -1,4 +1,4 @@
-# thunder-muscle
+# sanoma
 
 Fast Thunderbird email dataset extraction and analysis using Gloda database.
 
@@ -63,13 +63,13 @@ Since the tool uses direct "Gloda" (**Glo**bal **Da**tabase) access, the JSON ex
 
 ## Workflows [ `workflows/` ]
 
-**thunder-muscle** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `analysis/`, `plot/`, and `tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
+**sanoma** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `analysis/`, `plot/`, and `tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
 
 ```bash
 # Run any workflow
-python3 lib/workflow.py workflows/spam.yaml
-# or
-./workflow workflows/wsu.yaml  # convenience wrapper
+sanoma workflow workflows/spam.yaml
+# or (before installation)
+python3 tm.py workflow workflows/wsu.yaml
 ```
 
 I'm not intentionally a data hoarder, I'm just not an aggressive email deleter and filter user. 

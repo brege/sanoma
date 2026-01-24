@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 """
-Thunder Muscle - Thunderbird email dataset API
+Sanoma - Email analysis and workflow orchestration for Thunderbird
 """
+
 import sqlite3
 import json
 import re
 import argparse
 from pathlib import Path
-import sys
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
-
-from output import write_data  # noqa: E402
-from config import (  # noqa: E402
+from sanoma.lib.output import write_data
+from sanoma.lib.config import (
     load_config,
     get_profile_path,
     get_output_format,
@@ -213,10 +210,9 @@ def stats(input_file):
         print(f"    {domain}: {count}")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Thunder Muscle - Thunderbird email analysis"
-    )
+def main():
+    """Entry point for sanoma CLI"""
+    parser = argparse.ArgumentParser(description="Sanoma - Thunderbird email analysis")
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Extract command
@@ -260,6 +256,10 @@ if __name__ == "__main__":
     stats_parser = subparsers.add_parser("stats", help="Show dataset statistics")
     stats_parser.add_argument("input_file", help="Input JSON file")
 
+    # Workflow command
+    workflow_parser = subparsers.add_parser("workflow", help="Run YAML workflow")
+    workflow_parser.add_argument("workflow_file", help="Path to workflow YAML file")
+
     args = parser.parse_args()
 
     try:
@@ -292,8 +292,17 @@ if __name__ == "__main__":
             )
         elif args.command == "stats":
             stats(args.input_file)
+        elif args.command == "workflow":
+            from sanoma.lib.workflow import run_workflow
+
+            success = run_workflow(args.workflow_file)
+            exit(0 if success else 1)
         else:
             parser.print_help()
     except Exception as e:
         print(f"Error: {e}")
         exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -9,11 +9,8 @@ import sys
 import argparse
 from collections import Counter
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
-
-from output import write_data  # noqa: E402
-from config import load_config, get_output_format  # noqa: E402
+from sanoma.lib.output import write_data  # noqa: E402
+from sanoma.lib.config import load_config, get_output_format  # noqa: E402
 
 
 def get_pattern_emails(input_file, pattern="unsubscribe"):

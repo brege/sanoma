@@ -4,16 +4,13 @@ Temporal plotting tool for Thunder Muscle analysis results
 """
 
 import json
-import sys
 import argparse
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from datetime import datetime
 from pathlib import Path
 
-# Add lib to path before importing custom modules
-sys.path.append("lib")
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 
 def parse_email_date(date_str):
