@@ -6,21 +6,21 @@ steps:
     action: "backup_profile"
     params:
       source: "~/.thunderbird/btajokz2.default-release"
-      destination: "assets/profiles/btajokz2.default-release"
+      destination: "data/profiles/btajokz2.default-release"
       exclude_patterns:
         - "lock"
         - "*.log"
         - "cache*"
         - "startupCache*"
-  
+
   - name: "extract_fresh_dataset"
     action: "extract"
     params:
       format: "json"
-      output: "assets/complete_dataset.json"
+      output: "data/extract/all.json"
       force: true
-  
+
   - name: "verify_dataset"
     action: "stats"
     params:
-      input: "assets/complete_dataset.json"
+      input: "data/extract/all.json"

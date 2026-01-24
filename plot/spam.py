@@ -238,7 +238,7 @@ def main():
         help="Type of plot to generate",
     )
     parser.add_argument(
-        "--output-dir", default="output/plots", help="Output directory for plots"
+        "--output-dir", default="data/plots", help="Output directory for plots"
     )
     parser.add_argument("--title", default="Spam Analysis", help="Title for the plots")
     parser.add_argument(

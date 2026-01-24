@@ -2,6 +2,7 @@
 """
 Configuration management for Thunder Muscle
 """
+
 import yaml
 from pathlib import Path
 
@@ -28,7 +29,7 @@ def get_profile_path(config, profile_arg=None):
         profile_name = config.get("data", {}).get("profile")
 
     if profile_name:
-        return f"assets/{profile_name}"
+        return f"data/profiles/{profile_name}"
 
     raise ValueError("No profile specified in config or arguments")
 
@@ -57,8 +58,7 @@ def get_directories(config):
     """Get directory structure from config"""
     directories = config.get("directories", {})
     return {
-        "assets": directories.get("assets", "assets"),
-        "output": directories.get("output", "output"),
+        "data": directories.get("data", "data"),
         "cache": directories.get("cache", "cache"),
     }
 
@@ -67,17 +67,15 @@ def get_output_structure(config):
     """Get output subdirectory structure from config"""
     structure = config.get("output_structure", {})
     return {
-        "datasets": structure.get("datasets", "output/datasets"),
-        "analysis": structure.get("analysis", "output/analysis"),
-        "plots": structure.get("plots", "output/plots"),
+        "extract": structure.get("extract", "data/extract"),
+        "analysis": structure.get("analysis", "data/analysis"),
+        "plots": structure.get("plots", "data/plots"),
     }
 
 
 def get_default_complete_dataset_path(config):
     """Get path to complete dataset from config"""
-    return config.get("defaults", {}).get(
-        "complete_dataset", "assets/complete_dataset.json"
-    )
+    return config.get("defaults", {}).get("complete_dataset", "data/extract/all.json")
 
 
 def get_default_extract_filename(config):

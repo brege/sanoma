@@ -6,23 +6,23 @@ steps:
     action: "extract"
     params:
       format: "json"
-      output: "assets/complete_dataset.json"
-  
+      output: "data/extract/all.json"
+
   - name: "plot_wsu_volume"
     action: "plot_temporal"
     params:
-      input: "assets/complete_dataset.json"
+      input: "data/extract/all.json"
       filter_domain: "wsu.edu"
       plot_type: "both"
-      output_dir: "output/plots/wsu"
+      output_dir: "data/plots/wsu"
       title: "WSU Email Volume Analysis"
       display: "save"
-  
+
   - name: "filter_wsu_emails_with_body"
     action: "filter"
     params:
-      input: "assets/complete_dataset.json"
-      output: "output/datasets/wsu_body.json"
+      input: "data/extract/all.json"
+      output: "data/extract/wsu.json"
       domain: "wsu.edu"
       has_body: true
       format: "json"
@@ -30,26 +30,26 @@ steps:
   - name: "temporal_analysis_yearly"
     action: "analyze_temporal"
     params:
-      input: "output/datasets/wsu_body.json"
+      input: "data/extract/wsu.json"
       analysis: "year"
-      output: "output/analysis/wsu_yearly.csv"
+      output: "data/analysis/wsu/yearly.csv"
       format: "csv"
 
   - name: "temporal_analysis_monthly_2016"
     action: "analyze_temporal"
     params:
-      input: "output/datasets/wsu_body.json"
+      input: "data/extract/wsu.json"
       analysis: "month"
       year: 2016
-      output: "output/analysis/wsu_2016_monthly.json"
+      output: "data/analysis/wsu/monthly/2016.json"
       format: "json"
 
   - name: "unsubscribe_analysis_wsu"
     action: "analyze_domains"
     params:
-      input: "assets/complete_dataset.json"
+      input: "data/extract/all.json"
       compare_pattern: "wsu.edu"
       pattern: "unsubscribe"
       threshold: 0.85
-      output: "output/analysis/wsu_unsubscribe.json"
+      output: "data/analysis/wsu/unsubscribe.json"
       format: "json"

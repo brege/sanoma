@@ -189,7 +189,7 @@ def main():
         help="Type of plot to generate",
     )
     parser.add_argument(
-        "--output-dir", default="plots", help="Output directory for plots"
+        "--output-dir", default="data/plots", help="Output directory for plots"
     )
     parser.add_argument("--title", default="Email Volume", help="Title for the plots")
     parser.add_argument(

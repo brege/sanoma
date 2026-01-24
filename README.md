@@ -21,7 +21,7 @@ uv pip install .
 
 2. Copy Thunderbird's profile folder (e.g. `~/.thunderbird/abc123d.default-release`) to a location of your choice
    ``` bash
-   cp ~/.thunderbird/*.default-release assets/
+   cp ~/.thunderbird/*.default-release data/extract/
    ```
    If you want to run directly on the in-situ profile on your computer, you must close Thunderbird.
 
@@ -80,7 +80,7 @@ Much of this can be done in a Jupyter notebook--far easier to refresh plots this
 I developed this method in my Markdown-to-PDF project--**[oshea](https://github.com/brege/oshea)**--where I realized comprehensive end-to-end tests were just manifest workflows. It's an intuitive way to string command line sequences together. The *pipeline* term in machine learning/data science is congruent to this system.
 
 ```bash
-docs/img/ # <- output/plots/ <- workflows/
+docs/img/ # <- data/plots/ <- workflows/
 ├── spam
 │   ├── heatmap.png
 │   ├── keywords.png

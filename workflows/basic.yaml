@@ -1,42 +1,18 @@
 name: "Basic Email Analysis Pipeline"
-description: "Extract emails, filter by domain, and run temporal analysis"
+description: "Extract emails and filter by domain"
 
 steps:
   - name: "extract_dataset"
     action: "extract"
     params:
       format: "json"
-      output: "assets/complete_dataset.json"
-  
+      output: "data/extract/all.json"
+
   - name: "filter_wsu_emails"
-    action: "filter" 
+    action: "filter"
     params:
-      input: "assets/complete_dataset.json"
-      output: "output/datasets/wsu_emails.json"
+      input: "data/extract/all.json"
+      output: "data/extract/wsu.json"
       domain: "wsu.edu"
       has_body: true
       format: "json"
-  
-  - name: "temporal_analysis_wsu"
-    action: "analyze_temporal"
-    params:
-      input: "output/datasets/wsu_emails.json"
-      analysis: "year"
-      output: "output/analysis/wsu_yearly.csv"
-      format: "csv"
-  
-  - name: "weekday_analysis_wsu" 
-    action: "analyze_temporal"
-    params:
-      input: "output/datasets/wsu_emails.json"
-      analysis: "weekday"
-      output: "output/analysis/wsu_weekday.json"
-  
-  - name: "domain_analysis"
-    action: "analyze_domains"
-    params:
-      input: "assets/complete_dataset.json"
-      compare_pattern: "wsu.edu"
-      pattern: "unsubscribe"
-      threshold: 0.90
-      output: "output/analysis/unsubscribe.json"
