@@ -17,7 +17,7 @@ uv pip install .
 
 ### Thunderbird Profile
 1. You must ensure your Thunderbird profile is indexed.
-   ![Thunderbird Index Settings](docs/img/thunderbird-index-settings.png)
+   ![Thunderbird Index Settings](docs/img/screenshot.png)
 
 2. Copy Thunderbird's profile folder (e.g. `~/.thunderbird/abc123d.default-release`) to a location of your choice
    ``` bash
@@ -47,10 +47,10 @@ python3 tm.py query tb-profile.json output.json --pattern "unsubscribe"
 python3 tm.py stats tb-profile.json
 ```
 
-### Domain Analysis [`analyze_domains.py`]
+### Domain Analysis [`analysis/domains.py`]
 ```bash
 # Analyze domains producing emails with specific patterns
-python3 analyze_domains.py dataset.json compare_domain --pattern "unsubscribe"
+python3 analysis/domains.py dataset.json compare_domain --pattern "unsubscribe"
 ```
 
 ## Output Formats
@@ -63,13 +63,13 @@ Since the tool uses direct "Gloda" (**Glo**bal **Da**tabase) access, the JSON ex
 
 ## Workflows [ `workflows/` ]
 
-**thunder-muscle** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `analyzers/`, `plotters/`, and `tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
+**thunder-muscle** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `analysis/`, `plot/`, and `tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
 
 ```bash
 # Run any workflow
-python3 lib/workflow.py workflows/spam_analysis.yaml
+python3 lib/workflow.py workflows/spam.yaml
 # or
-./workflow workflows/wsu_analysis.yaml  # convenience wrapper
+./workflow workflows/wsu.yaml  # convenience wrapper
 ```
 
 I'm not intentionally a data hoarder, I'm just not an aggressive email deleter and filter user. 
@@ -82,12 +82,12 @@ I developed this method in my Markdown-to-PDF project--**[oshea](https://github.
 ```bash
 docs/img/ # <- output/plots/ <- workflows/
 ├── spam
-│   ├── spam_heatmap.png
-│   ├── spam_keywords.png
-│   └── spam_timeline.png
+│   ├── heatmap.png
+│   ├── keywords.png
+│   └── timeline.png
 └── wsu
     ├── timeline.png
-    └── year_over_year_histogram.png
+    └── histogram.png
 ```
 
 #### Grad-school Emails
@@ -96,39 +96,39 @@ The monthly timeline reveals the academic year rhythm: high volume during active
 
 My personal dataset has about 35K emails between my grad-school emails and [my current website's](https://brege.org) personal email. Not included are my Gmail and undergrad email(s). I plan on synchronizing those at a later date.
 
-- **[`workflows/wsu_analysis.yaml`](workflows/wsu_analysis.yaml)**
-- **[`plot_temporal.py`](plotters/plot_temporal.py)**
-- **[`analyze_temporal.py`](analyzers/analyze_temporal.py)**
+- **[`workflows/wsu.yaml`](workflows/wsu.yaml)**
+- **[`plot/timeline.py`](plot/timeline.py)**
+- **[`analysis/timeline.py`](analysis/timeline.py)**
 
 ![Grad-school Emails (monthly)](docs/img/wsu/timeline.png)
 
 WSU's Okta system requires(d) changing passwords every 6 months, and sometime a couple years after my defense my account died. I am thankful that I had a thunderbird profile tucked away on a drive that allowed me to recover all of my university emails..
 
-![Grad-school Emails (yearly)](docs/img/wsu/year_over_year_histogram.png)
+![Grad-school Emails (yearly)](docs/img/wsu/histogram.png)
 
 The year-over-year histogram demonstrates consistent academic seasonality, with September-April peaks and May -- mid-August valleys across all years of graduate study.  Even with teaching summer labs, the beuracratic pressure in the summertime dies. I loved teaching in the summer.
 
 #### Spam Emails
 
-- **[`workflows/spam_analysis.yaml`](workflows/spam_analysis.yaml)**
-- **[`plot_spam_trends.py`](plotters/plot_spam_trends.py)**
-- **[`analyze_spam_keywords.py`](analyzers/analyze_spam_keywords.py)**
+- **[`workflows/spam.yaml`](workflows/spam.yaml)**
+- **[`plot/spam.py`](plot/spam.py)**
+- **[`analysis/spam.py`](analysis/spam.py)**
 
 The spam timeline shows minimal marketing emails pre-2010, followed by a sharp increase around university enrollment. By 2015, spam reached 60-80% of all emails and has remained consistently high. The GDPR implementation around 2018 created a spike in `unsubscribe` language as companies scrambled to comply with new regulations.
 
-![Spam Timeline](docs/img/spam/spam_timeline.png)
+![Spam Timeline](docs/img/spam/timeline.png)
 
 The tail in the beginning of this timeline is presented for context.
 It only includes a "purified" hotmail account mailbox from my teenage years that extended a bit into my undergrad years. Those years overlap with gmail usage (not integrated into this data) and my GVSU university email.
 
-![Spam Keywords](docs/img/spam/spam_keywords.png)
+![Spam Keywords](docs/img/spam/keywords.png)
 
 
 Another useful filter for spam emails is checking for keywords like **`unsubscribe`** in the message body.
 
 `unsubscribe_bait` dominates with over 12,500 matches, followed by `satisfaction` surveys (~8k) and direct "survey" requests (~4k). This reveals how modern marketing shifted from direct sales to engagement-focused tactics requesting feedback and reviews.
 
-![Spam Timeline](docs/img/spam/spam_heatmap.png)
+![Spam Heatmap](docs/img/spam/heatmap.png)
 
 The heatmap (filtered to post-2010) shows "satisfaction" spam as the most persistent threat, maintaining 20-25% frequency from 2012 onwards. Survey-based spam shows steady growth, intensifying after 2020, when both GDPR constraints pressured companies to invent new angles of attack, becoming increasingly desperate for customer "feedback" (attention) during the pandemic. **Satisfaction feedback surveys are advertisements.**
 
