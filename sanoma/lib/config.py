@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Configuration management for Thunder Muscle
+Configuration management for sanoma
 """
 
 import yaml

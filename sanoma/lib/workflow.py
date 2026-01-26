@@ -32,8 +32,8 @@ def find_tool_script(action):
     from pathlib import Path
 
     # Built-in sanoma actions
-    tm_actions = ["extract", "filter", "query", "stats"]
-    if action in tm_actions:
+    sanoma_actions = ["extract", "filter", "query", "stats"]
+    if action in sanoma_actions:
         return ["sanoma", action]
 
     # Map old action names to new single-word script names
@@ -77,7 +77,7 @@ def build_command(action, params):
 
     cmd = base_cmd[:]
 
-    # Handle tm.py specific commands
+    # Handle sanoma CLI commands
     if base_cmd[0] == "sanoma":
         if action == "filter" and "input" in params and "output" in params:
             cmd.extend([params["input"], params["output"]])

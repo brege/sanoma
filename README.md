@@ -64,7 +64,7 @@ Since the tool uses direct "Gloda" (**Glo**bal **Da**tabase) access, the JSON ex
 
 ## Workflows [ `workflows/` ]
 
-**sanoma** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `sanoma/analysis/`, `sanoma/plot/`, and `sanoma/tools/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
+**sanoma** uses YAML workflows to define multi-step analysis pipelines. The workflow runner automatically discovers and executes tools from the `sanoma/analysis/` and `sanoma/plot/` directories, making it easy to chain data extraction, filtering, analysis, and visualization into reproducible pipelines.
 
 Run any workflow:
 ```bash

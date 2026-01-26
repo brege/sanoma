@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Temporal analysis tool using tm.py API and lib output adapters
+Temporal analysis tool using the sanoma CLI API and lib output adapters
 """
 
 import json

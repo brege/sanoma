@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Output format adapters for Thunder Muscle data
+Output format adapters for sanoma data
 """
 
 import json

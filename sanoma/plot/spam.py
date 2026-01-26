@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Spam trends plotting tool for Thunder Muscle
+Spam trends plotting tool for sanoma
 Creates visualizations showing spam keyword frequency over time
 """
 

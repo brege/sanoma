@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Temporal plotting tool for Thunder Muscle analysis results
+Temporal plotting tool for sanoma analysis results
 """
 
 import json

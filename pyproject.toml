@@ -8,10 +8,11 @@ dependencies = [
   "PyYAML>=6.0.0",
   "pandas>=2.0.0",
   "matplotlib>=3.8.0",
+  "pyspark>=3.5.0",
 ]
 
 [project.scripts]
-sanoma = "tm:main"
+sanoma = "sanoma.main:main"
 
 [project.optional-dependencies]
 dev = [
@@ -24,7 +25,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["sanoma", "sanoma.lib", "sanoma.analysis", "sanoma.plot"]
-py-modules = ["tm"]
 
 [tool.ruff]
 line-length = 88

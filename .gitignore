@@ -13,3 +13,7 @@ config.yml
 *.pyo
 __pycache__
 */__pycache__/*
+
+# jupyter
+.jupyter_ystore.db
+.ipynb_checkpoints

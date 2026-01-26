@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Spam keyword analysis tool for Thunder Muscle
+Spam keyword analysis tool for sanoma
 Analyzes frequency of marketing/spam keywords over time
 """
 
