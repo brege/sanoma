@@ -1,6 +1,6 @@
 # sanoma
 
-Fast Thunderbird email dataset extraction and analysis using Gloda database.
+Fast email extraction of Thunderbird's Gloda database into manipulable datasets and tools for data analysis and visualization.
 
 ## Setup
 
@@ -27,22 +27,22 @@ This installs the `sanoma` command globally without creating a local venv.
 
 ### Command Line Interface
 
-Extract complete dataset from Thunderbird:
+**Extract** complete dataset from Thunderbird:
 ```bash
 sanoma extract [--output data/extract/all.json]
 ```
 
-Filter emails by criteria:
+**Filter** emails by criteria:
 ```bash
 sanoma filter input.json output.json --domain "*.edu" --year 2023
 ```
 
-Query emails by content pattern:
+**Query** emails by content pattern:
 ```bash
 sanoma query input.json output.json --pattern "unsubscribe"
 ```
 
-Show dataset statistics:
+Show dataset **statistics**:
 ```bash
 sanoma stats input.json
 ```
