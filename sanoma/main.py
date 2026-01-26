@@ -8,7 +8,6 @@ from sanoma.lib.output import write_data
 from sanoma.lib.config import (
     load_config,
     get_profile_path,
-    get_output_format,
     get_default_complete_dataset_path,
 )
 from sanoma.lib.extract import extract_complete_dataset
@@ -28,9 +27,6 @@ def main():
     )
     extract_parser.add_argument("--profile", help="Path to Thunderbird profile")
     extract_parser.add_argument("--output", help="Output file")
-    extract_parser.add_argument(
-        "--format", choices=["json", "csv", "yaml"], help="Output format"
-    )
 
     # Filter command
     filter_parser = subparsers.add_parser("filter", help="Filter emails")
@@ -43,9 +39,6 @@ def main():
         "--has-body", action="store_true", help="Only emails with bodies"
     )
     filter_parser.add_argument("--limit", type=int, help="Limit results")
-    filter_parser.add_argument(
-        "--format", choices=["json", "csv", "yaml"], help="Output format"
-    )
 
     # Query command
     query_parser = subparsers.add_parser("query", help="Query emails matching pattern")
@@ -54,9 +47,6 @@ def main():
     query_parser.add_argument("--pattern", help="Pattern to search for")
     query_parser.add_argument(
         "--case-sensitive", action="store_true", help="Case sensitive search"
-    )
-    query_parser.add_argument(
-        "--format", choices=["json", "csv", "yaml"], help="Output format"
     )
 
     # Stats command
@@ -75,14 +65,11 @@ def main():
         if args.command == "extract":
             profile = get_profile_path(config, args.profile)
             output = args.output or get_default_complete_dataset_path(config)
-            output_format = args.format or get_output_format(config)
-            extract_complete_dataset(profile, output, output_format, config)
+            extract_complete_dataset(profile, output, config)
         elif args.command == "filter":
-            output_format = args.format or get_output_format(config)
             filter_emails(
                 args.input_file,
                 args.output_file,
-                output_format,
                 domain=args.domain,
                 year=args.year,
                 subject_contains=args.subject_contains,
@@ -90,9 +77,8 @@ def main():
                 limit=args.limit,
             )
         elif args.command == "query":
-            output_format = args.format or get_output_format(config)
             results = query_emails(args.input_file, args.pattern, args.case_sensitive)
-            format_used = write_data(results, args.output_file, output_format)
+            format_used = write_data(results, args.output_file, "json")
             print(
                 f"Found {len(results)} matching emails, saved to "
                 f"{args.output_file} ({format_used})"

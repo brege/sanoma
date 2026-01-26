@@ -3,51 +3,44 @@
 Domain analysis tool using sanoma lib helpers and output adapters
 """
 
-import json
 import re
 import argparse
 from collections import Counter
 
+import pandas as pd
+
 from sanoma.lib.output import write_data  # noqa: E402
-from sanoma.lib.config import load_config, get_output_format  # noqa: E402
-from sanoma.lib.query import query_emails  # noqa: E402
-
-
-def get_pattern_emails(input_file, pattern="unsubscribe"):
-    """Get emails containing pattern"""
-    return query_emails(input_file, pattern)
 
 
 def filter_emails_by_domain(emails, domain_pattern):
     """Filter emails by sender domain pattern"""
+    from_domains = emails["from_domain"].astype(str)
     if domain_pattern.startswith("*."):
         suffix = domain_pattern[2:].lower()
-        return [
-            email
-            for email in emails
-            if email.get("from_domain", "").lower().endswith(suffix)
-        ]
+        mask = from_domains.str.lower().str.endswith(suffix, na=False)
+        return emails[mask]
 
-    try:
-        # Allow regex-based domain matching.
-        domain_regex = re.compile(domain_pattern, re.IGNORECASE)
-        return [
-            email
-            for email in emails
-            if domain_regex.search(email.get("from_domain", ""))
-        ]
-    except re.error:
-        return [
-            email
-            for email in emails
-            if email.get("from_domain", "").lower() == domain_pattern.lower()
-        ]
+    # Allow regex-based domain matching.
+    domain_regex = re.compile(domain_pattern, re.IGNORECASE)
+    mask = from_domains.str.contains(domain_regex, na=False)
+    return emails[mask]
+
+
+def get_pattern_emails(emails, pattern):
+    """Get emails containing pattern"""
+    combined = (
+        emails["subject"].fillna("").astype(str)
+        + " "
+        + emails["body"].fillna("").astype(str)
+    )
+    mask = combined.str.contains(pattern, case=False, regex=True, na=False)
+    return emails[mask]
 
 
 def analyze_top_domains(emails, threshold=0.95):
     """Find domains producing threshold% of pattern-matching emails"""
-    domain_counts = Counter(email["from_domain"] for email in emails)
-    total = len(emails)
+    domain_counts = Counter(emails["from_domain"].astype(str))
+    total = len(emails.index)
 
     sorted_domains = domain_counts.most_common()
     cumulative = 0
@@ -86,9 +79,6 @@ def main():
     )
     parser.add_argument("--output", help="Output file for analysis results")
     parser.add_argument(
-        "--format", choices=["json", "csv", "yaml"], help="Output format"
-    )
-    parser.add_argument(
         "--threshold",
         type=float,
         default=0.95,
@@ -97,41 +87,43 @@ def main():
 
     args = parser.parse_args()
 
-    config = load_config()
+    emails_frame = pd.read_json(args.input_file)
+    required_columns = {"from_domain", "subject", "body"}
+    missing_columns = required_columns.difference(emails_frame.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns in JSON: {', '.join(sorted(missing_columns))}"
+        )
 
-    pattern_emails = get_pattern_emails(args.input_file, args.pattern)
+    pattern_emails = get_pattern_emails(emails_frame, args.pattern)
     top_domains, coverage = analyze_top_domains(pattern_emails, args.threshold)
 
-    with open(args.input_file, "r") as f:
-        all_emails = json.load(f)
-
-    compare_emails = filter_emails_by_domain(all_emails, args.compare_pattern)
+    compare_emails = filter_emails_by_domain(emails_frame, args.compare_pattern)
 
     # Prepare analysis results
     analysis_results = {
         "pattern_analysis": {
             "pattern": args.pattern,
-            "total_emails": len(pattern_emails),
+            "total_emails": int(pattern_emails.shape[0]),
             "coverage_threshold": args.threshold,
             "actual_coverage": coverage,
             "top_domains": top_domains,
         },
         "comparison": {
             "pattern": args.compare_pattern,
-            "total_emails": len(compare_emails),
-            "domains": list(set(email["from_domain"] for email in compare_emails)),
+            "total_emails": int(compare_emails.shape[0]),
+            "domains": list(set(compare_emails["from_domain"].astype(str))),
         },
     }
 
     # Find overlap
-    compare_domains = set(email["from_domain"] for email in compare_emails)
+    compare_domains = set(compare_emails["from_domain"].astype(str))
     top_domain_names = set(d["domain"] for d in top_domains)
     overlap = list(compare_domains.intersection(top_domain_names))
     analysis_results["overlap"] = overlap
 
     if args.output:
-        output_format = args.format or get_output_format(config)
-        format_used = write_data(analysis_results, args.output, output_format)
+        format_used = write_data(analysis_results, args.output, "json")
         print(f"Analysis saved to {args.output} ({format_used})")
     else:
         # Console output

@@ -5,7 +5,6 @@ Output format adapters for sanoma data
 
 import json
 import csv
-import yaml
 from pathlib import Path
 
 
@@ -49,12 +48,6 @@ def write_csv(data, output_file):
         writer.writerows(csv_data)
 
 
-def write_yaml(data, output_file):
-    """Write data as YAML"""
-    with open(output_file, "w") as f:
-        yaml.dump(data, f, default_flow_style=False)
-
-
 def write_data(data, output_file, format_type=None):
     """Write data in specified format, auto-detect from extension if not
     specified"""
@@ -66,8 +59,6 @@ def write_data(data, output_file, format_type=None):
             format_type = "json"
         elif ext == ".csv":
             format_type = "csv"
-        elif ext in [".yaml", ".yml"]:
-            format_type = "yaml"
         else:
             format_type = "json"
 
@@ -75,8 +66,6 @@ def write_data(data, output_file, format_type=None):
         write_json(data, output_file)
     elif format_type == "csv":
         write_csv(data, output_file)
-    elif format_type == "yaml":
-        write_yaml(data, output_file)
     else:
         raise ValueError(f"Unsupported format: {format_type}")
 

@@ -5,7 +5,6 @@ steps:
   - name: extract dataset
     action: extract
     params:
-      format: json
       output: data/extract/all.json
   - name: filter wsu emails
     action: filter
@@ -14,4 +13,3 @@ steps:
       output: data/extract/wsu.json
       domain: wsu.edu
       has_body: true
-      format: json

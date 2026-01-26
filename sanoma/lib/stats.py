@@ -1,35 +1,26 @@
-import json
+import pandas as pd
 
 
 def stats(input_file):
     """Show dataset statistics"""
-    with open(input_file, "r") as f:
-        emails = json.load(f)
+    emails = pd.read_json(input_file)
+    required_columns = {"from_domain", "date", "folder", "has_body"}
+    missing_columns = required_columns.difference(emails.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns in JSON: {', '.join(sorted(missing_columns))}"
+        )
 
-    domains = {}
-    years = {}
-    folders = {}
-    with_bodies = 0
-
-    for email in emails:
-        domain = email.get("from_domain", "unknown")
-        domains[domain] = domains.get(domain, 0) + 1
-
-        date = email.get("date", "")
-        year = date[:4] if len(date) >= 4 else "unknown"
-        years[year] = years.get(year, 0) + 1
-
-        folder = email.get("folder", "unknown")
-        folders[folder] = folders.get(folder, 0) + 1
-
-        if email.get("has_body"):
-            with_bodies += 1
+    domains = emails["from_domain"].astype(str).value_counts()
+    years = emails["date"].astype(str).str.slice(0, 4).replace("", "unknown")
+    years = years.value_counts()
+    with_bodies = int(emails["has_body"].astype(bool).sum())
 
     print("Dataset Statistics:")
-    print(f"  Total emails: {len(emails)}")
+    print(f"  Total emails: {len(emails.index)}")
     print(f"  Emails with bodies: {with_bodies}")
-    print(f"  Unique domains: {len(domains)}")
-    print(f"  Date range: {min(years.keys())} to {max(years.keys())}")
+    print(f"  Unique domains: {len(domains.index)}")
+    print(f"  Date range: {years.index.min()} to {years.index.max()}")
     print("\nTop 10 domains:")
-    for domain, count in sorted(domains.items(), key=lambda x: x[1], reverse=True)[:10]:
-        print(f"    {domain}: {count}")
+    for domain, count in domains.head(10).items():
+        print(f"    {domain}: {int(count)}")

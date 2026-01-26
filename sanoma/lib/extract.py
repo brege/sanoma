@@ -21,9 +21,7 @@ def extract_domain(email_addr):
     return "malformed"
 
 
-def extract_complete_dataset(
-    profile_path, output_file, output_format="json", config=None
-):
+def extract_complete_dataset(profile_path, output_file, config=None):
     """Extract complete email dataset from Gloda"""
     db_path = Path(profile_path) / "global-messages-db.sqlite"
     if not db_path.exists():
@@ -79,7 +77,7 @@ def extract_complete_dataset(
 
     conn.close()
 
-    format_used = write_data(emails, output_file, output_format)
+    format_used = write_data(emails, output_file, "json")
 
     with_bodies = sum(1 for e in emails if e["has_body"])
     filter_msg = f" (filtered out {filtered_count})" if filtered_count > 0 else ""

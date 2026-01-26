@@ -3,104 +3,69 @@
 Temporal analysis tool using the sanoma CLI API and lib output adapters
 """
 
-import json
 import argparse
-from collections import defaultdict
-from datetime import datetime
+import pandas as pd
 
 from sanoma.lib.output import write_data  # noqa: E402
-from sanoma.lib.config import load_config, get_output_format  # noqa: E402
 
 
-def parse_email_date(date_str):
-    """Parse email date string to datetime object"""
-    try:
-        return datetime.strptime(date_str[:19], "%Y-%m-%d %H:%M:%S")
-    except (ValueError, TypeError):
-        return None
+def build_group_stats(grouped):
+    """Build totals and with_body counts from grouped rows"""
+    totals = grouped.size()
+    with_body = grouped["has_body_bool"].sum()
+    return totals, with_body
 
 
 def analyze_by_year(emails):
     """Analyze email patterns by year"""
-    yearly_data = defaultdict(lambda: {"total": 0, "with_body": 0})
-
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            year = date_obj.year
-            yearly_data[year]["total"] += 1
-            if email.get("has_body"):
-                yearly_data[year]["with_body"] += 1
-
-    return dict(yearly_data)
+    grouped = emails.groupby(emails["date_parsed"].dt.year)
+    totals, with_body = build_group_stats(grouped)
+    return {
+        int(year): {"total": int(totals[year]), "with_body": int(with_body[year])}
+        for year in totals.index
+    }
 
 
 def analyze_by_month(emails, year=None):
     """Analyze email patterns by month (optionally for specific year)"""
-    monthly_data = defaultdict(lambda: {"total": 0, "with_body": 0})
-
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            if year is None or date_obj.year == year:
-                month_key = f"{date_obj.year}-{date_obj.month:02d}"
-                monthly_data[month_key]["total"] += 1
-                if email.get("has_body"):
-                    monthly_data[month_key]["with_body"] += 1
-
-    return dict(monthly_data)
+    filtered = emails
+    if year is not None:
+        filtered = filtered[filtered["date_parsed"].dt.year == year]
+    month_key = filtered["date_parsed"].dt.strftime("%Y-%m")
+    grouped = filtered.groupby(month_key)
+    totals, with_body = build_group_stats(grouped)
+    return {
+        str(month): {"total": int(totals[month]), "with_body": int(with_body[month])}
+        for month in totals.index
+    }
 
 
 def analyze_by_weekday(emails):
     """Analyze email patterns by day of week"""
-    weekday_names = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ]
-    weekday_data = defaultdict(lambda: {"total": 0, "with_body": 0})
-
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            weekday = weekday_names[date_obj.weekday()]
-            weekday_data[weekday]["total"] += 1
-            if email.get("has_body"):
-                weekday_data[weekday]["with_body"] += 1
-
-    return dict(weekday_data)
+    weekday_series = emails["date_parsed"].dt.day_name()
+    grouped = emails.groupby(weekday_series)
+    totals, with_body = build_group_stats(grouped)
+    return {
+        str(day): {"total": int(totals[day]), "with_body": int(with_body[day])}
+        for day in totals.index
+    }
 
 
 def analyze_by_hour(emails):
     """Analyze email patterns by hour of day"""
-    hourly_data = defaultdict(lambda: {"total": 0, "with_body": 0})
-
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            hour = date_obj.hour
-            hourly_data[hour]["total"] += 1
-            if email.get("has_body"):
-                hourly_data[hour]["with_body"] += 1
-
-    return dict(hourly_data)
+    grouped = emails.groupby(emails["date_parsed"].dt.hour)
+    totals, with_body = build_group_stats(grouped)
+    return {
+        int(hour): {"total": int(totals[hour]), "with_body": int(with_body[hour])}
+        for hour in totals.index
+    }
 
 
 def get_date_range(emails):
     """Get the date range of the dataset"""
-    dates = []
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            dates.append(date_obj)
-
-    if dates:
-        return min(dates), max(dates)
-    return None, None
+    if emails.empty:
+        return None, None
+    return emails["date_parsed"].min(), emails["date_parsed"].max()
 
 
 def main():
@@ -114,16 +79,25 @@ def main():
     )
     parser.add_argument("--year", type=int, help="Specific year for monthly analysis")
     parser.add_argument("--output", help="Output file for analysis results")
-    parser.add_argument(
-        "--format", choices=["json", "csv", "yaml"], help="Output format"
-    )
 
     args = parser.parse_args()
 
-    config = load_config()
-
-    with open(args.input_file, "r") as f:
-        emails = json.load(f)
+    emails_frame = pd.read_json(args.input_file)
+    required_columns = {"date", "has_body"}
+    missing_columns = required_columns.difference(emails_frame.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns in JSON: {', '.join(sorted(missing_columns))}"
+        )
+    date_series = pd.to_datetime(
+        emails_frame["date"].astype(str).str.slice(0, 19),
+        format="%Y-%m-%d %H:%M:%S",
+        errors="coerce",
+    )
+    emails = emails_frame.assign(
+        date_parsed=date_series,
+        has_body_bool=emails_frame["has_body"].astype(bool),
+    ).dropna(subset=["date_parsed"])
 
     # Perform analysis based on type
     if args.analysis == "year":
@@ -216,8 +190,7 @@ def main():
 
     # Output results
     if args.output:
-        output_format = args.format or get_output_format(config)
-        format_used = write_data(analysis_data, args.output, output_format)
+        format_used = write_data(analysis_data, args.output, "json")
         print(f"Temporal analysis saved to {args.output} ({format_used})")
     else:
         # Console output

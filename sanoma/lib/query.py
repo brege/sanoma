@@ -1,24 +1,28 @@
-import json
 import re
+
+import pandas as pd
 
 
 def query_emails(input_file, pattern=None, case_sensitive=False):
     """Query emails matching pattern, return matching emails"""
-    with open(input_file, "r") as f:
-        emails = json.load(f)
+    emails = pd.read_json(input_file)
+    required_columns = {"subject", "body", "has_body"}
+    missing_columns = required_columns.difference(emails.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns in JSON: {', '.join(sorted(missing_columns))}"
+        )
 
     if not pattern:
-        return emails
+        return emails.to_dict(orient="records")
 
     flags = 0 if case_sensitive else re.IGNORECASE
     # Pattern search across subject and body.
     regex = re.compile(pattern, flags)
 
-    matches = []
-    for email in emails:
-        if regex.search(email.get("subject", "")) or (
-            email.get("has_body") and regex.search(email.get("body", ""))
-        ):
-            matches.append(email)
-
-    return matches
+    subject_mask = (
+        emails["subject"].fillna("").astype(str).str.contains(regex, na=False)
+    )
+    body_mask = emails["body"].fillna("").astype(str).str.contains(regex, na=False)
+    mask = subject_mask | (body_mask & emails["has_body"].astype(bool))
+    return emails[mask].to_dict(orient="records")

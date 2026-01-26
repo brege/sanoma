@@ -5,14 +5,12 @@ steps:
   - name: extract complete dataset
     action: extract
     params:
-      format: json
       output: data/extract/all.json
   - name: analyze spam keywords
     action: analyze_spam_keywords
     params:
       input: data/extract/all.json
       output: data/analysis/spam/keywords.json
-      format: json
   - name: plot spam trends
     action: plot_spam_trends
     params:
@@ -29,4 +27,3 @@ steps:
       pattern: survey
       threshold: 0.5
       output: data/analysis/spam/domains.json
-      format: json

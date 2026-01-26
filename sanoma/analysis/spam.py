@@ -4,11 +4,13 @@ Spam keyword analysis tool for sanoma
 Analyzes frequency of marketing/spam keywords over time
 """
 
-import json
 import argparse
 import re
 from collections import defaultdict
 from datetime import datetime
+
+import json
+import pandas as pd
 
 from sanoma.lib.output import write_data
 
@@ -22,11 +24,9 @@ def extract_date_components(date_str):
         return None, None
 
 
-def check_spam_keywords(email, keyword_patterns):
+def check_spam_keywords(subject, body, keyword_patterns):
     """Check if email contains spam keywords"""
-    subject = email.get("subject", "").lower()
-    body = email.get("body", "").lower()
-    combined_text = f"{subject} {body}"
+    combined_text = f"{subject} {body}".lower()
 
     matches = []
     for pattern_name, pattern in keyword_patterns.items():
@@ -61,8 +61,8 @@ def analyze_spam_keywords(emails, keyword_patterns):
     total_processed = 0
     total_spam = 0
 
-    for email in emails:
-        year, month = extract_date_components(email.get("date", ""))
+    for email in emails.itertuples(index=False):
+        year, month = extract_date_components(str(email.date))
         if not year:
             continue
 
@@ -74,7 +74,9 @@ def analyze_spam_keywords(emails, keyword_patterns):
         total_processed += 1
 
         # Check for spam keywords
-        spam_matches = check_spam_keywords(email, keyword_patterns)
+        spam_matches = check_spam_keywords(
+            str(email.subject), str(email.body), keyword_patterns
+        )
 
         if spam_matches:
             monthly_data[month_key]["spam_emails"] += 1
@@ -115,9 +117,6 @@ def main():
     )
     parser.add_argument("input_file", help="Input email dataset (JSON)")
     parser.add_argument("--output", help="Output file")
-    parser.add_argument(
-        "--format", choices=["json", "csv"], default="json", help="Output format"
-    )
     parser.add_argument("--keywords", help="Custom keyword patterns (JSON file)")
 
     args = parser.parse_args()
@@ -142,18 +141,23 @@ def main():
             default_patterns.update(custom_patterns)
 
     # Load emails
-    with open(args.input_file, "r") as f:
-        emails = json.load(f)
+    emails_frame = pd.read_json(args.input_file)
+    required_columns = {"date", "subject", "body"}
+    missing_columns = required_columns.difference(emails_frame.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns in JSON: {', '.join(sorted(missing_columns))}"
+        )
 
-    print(f"Analyzing {len(emails)} emails for spam keywords...")
+    print(f"Analyzing {len(emails_frame.index)} emails for spam keywords...")
 
     # Analyze spam patterns
-    analysis_data = analyze_spam_keywords(emails, default_patterns)
+    analysis_data = analyze_spam_keywords(emails_frame, default_patterns)
 
     # Output results
     if args.output:
-        write_data(analysis_data, args.output, args.format)
-        print(f"Spam analysis saved to {args.output} ({args.format})")
+        write_data(analysis_data, args.output, "json")
+        print(f"Spam analysis saved to {args.output} (json)")
     else:
         # Console output
         summary = analysis_data["summary"]

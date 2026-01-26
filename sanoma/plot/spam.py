@@ -4,47 +4,40 @@ Spam trends plotting tool for sanoma
 Creates visualizations showing spam keyword frequency over time
 """
 
-import json
 import argparse
-from datetime import datetime
 from pathlib import Path
 
+import json
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
 def create_spam_timeline(
-    spam_data, output_file, title="Spam Trends", display_method="save"
+    monthly_data, output_file, title="Spam Trends", display_method="save"
 ):
     """Create timeline plot showing spam percentage over time"""
-    monthly_data = spam_data.get("by_month", {})
-
-    if not monthly_data:
+    if monthly_data.empty:
         print("No monthly data found")
         return
 
     # Prepare data for plotting
-    dates = []
-    percentages = []
-    total_counts = []
-    spam_counts = []
+    monthly_data = monthly_data.copy()
+    monthly_data["period_date"] = pd.to_datetime(
+        monthly_data["month"], format="%Y-%m", errors="coerce"
+    )
+    monthly_data = monthly_data.dropna(subset=["period_date"])
+    monthly_data = monthly_data[monthly_data["total_emails"] > 5]
 
-    for month_key, data in sorted(monthly_data.items()):
-        # Only include months with meaningful data
-        if data["total_emails"] > 5:
-            try:
-                date_obj = datetime.strptime(month_key, "%Y-%m")
-                dates.append(date_obj)
-                percentages.append(data["spam_percentage"])
-                total_counts.append(data["total_emails"])
-                spam_counts.append(data["spam_emails"])
-            except ValueError:
-                continue
-
-    if not dates:
+    if monthly_data.empty:
         print("No valid date data found")
         return
+    monthly_data = monthly_data.sort_values("period_date")
 
+    dates = monthly_data["period_date"].tolist()
+    percentages = monthly_data["spam_percentage"].tolist()
+    total_counts = monthly_data["total_emails"].tolist()
+    spam_counts = monthly_data["spam_emails"].tolist()
     # Create the plot
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
@@ -93,25 +86,18 @@ def create_spam_timeline(
 
 
 def create_keyword_breakdown(
-    spam_data, output_file, title="Spam Keywords", display_method="save"
+    keyword_data, output_file, title="Spam Keywords", display_method="save"
 ):
     """Create bar chart showing most common spam keywords"""
-    yearly_data = spam_data.get("by_year", {})
-
-    # Aggregate keyword counts across all years
-    keyword_totals = {}
-    for year_data in yearly_data.values():
-        for keyword, count in year_data.get("keyword_matches", {}).items():
-            keyword_totals[keyword] = keyword_totals.get(keyword, 0) + count
-
-    if not keyword_totals:
+    if keyword_data.empty:
         print("No keyword data found")
         return
 
-    # Sort by frequency and take top 10
-    sorted_keywords = sorted(keyword_totals.items(), key=lambda x: x[1], reverse=True)
-    keywords = [k for k, v in sorted_keywords[:10]]
-    counts = [v for k, v in sorted_keywords[:10]]
+    keyword_totals = (
+        keyword_data.groupby("keyword")["count"].sum().sort_values(ascending=False)
+    )
+    keywords = keyword_totals.head(10).index.tolist()
+    counts = keyword_totals.head(10).tolist()
 
     # Create bar chart
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -148,44 +134,40 @@ def create_keyword_breakdown(
 
 
 def create_yearly_heatmap(
-    spam_data, output_file, title="Spam Trends", display_method="save"
+    yearly_data, keyword_data, output_file, title="Spam Trends", display_method="save"
 ):
     """Create heatmap showing spam percentage by year and keyword"""
-    yearly_data = spam_data.get("by_year", {})
-
-    if not yearly_data:
+    if yearly_data.empty:
         print("No yearly data found")
         return
 
-    # Get all keywords and years (filter to meaningful spam period 2010+)
-    all_keywords = set()
-    all_years = set()
+    filtered_years = yearly_data[yearly_data["year"] >= 2010]
+    keyword_data = keyword_data[
+        (keyword_data["year"] >= 2010) & (keyword_data["keyword"] != "unsubscribe_bait")
+    ]
 
-    for year, data in yearly_data.items():
-        year_int = int(year)
-        # Focus on post-2010 when marketing spam became prevalent
-        if year_int >= 2010:
-            all_years.add(year_int)
-            for keyword in data.get("keyword_matches", {}):
-                # Skip unsubscribe_bait to avoid GDPR false positives
-                if keyword != "unsubscribe_bait":
-                    all_keywords.add(keyword)
-
-    if not all_keywords:
+    if keyword_data.empty:
         print("No keyword data for heatmap")
         return
 
     # Create matrix
-    keywords_list = sorted(list(all_keywords))
-    years_list = sorted(list(all_years))
+    keywords_list = sorted(keyword_data["keyword"].unique().tolist())
+    years_list = sorted(filtered_years["year"].unique().tolist())
 
     matrix = []
     for keyword in keywords_list:
         row = []
+        keyword_rows = keyword_data[keyword_data["keyword"] == keyword]
         for year in years_list:
-            year_data = yearly_data.get(str(year), {})
-            keyword_count = year_data.get("keyword_matches", {}).get(keyword, 0)
-            total_emails = year_data.get("total_emails", 1)
+            year_data = keyword_rows[keyword_rows["year"] == year]
+            total_emails = int(
+                filtered_years.loc[filtered_years["year"] == year, "total_emails"].iloc[
+                    0
+                ]
+            )
+            keyword_count = (
+                int(year_data["count"].iloc[0]) if not year_data.empty else 0
+            )
             percentage = (keyword_count / total_emails * 100) if total_emails > 0 else 0
             row.append(percentage)
         matrix.append(row)
@@ -255,20 +237,51 @@ def main():
     with open(args.input_file, "r") as f:
         spam_data = json.load(f)
 
+    if "by_month" not in spam_data or "by_year" not in spam_data:
+        raise ValueError("Missing required sections in analysis JSON")
+
+    monthly_data = (
+        pd.DataFrame.from_dict(spam_data["by_month"], orient="index")
+        .reset_index()
+        .rename(columns={"index": "month"})
+    )
+    yearly_data = (
+        pd.DataFrame.from_dict(spam_data["by_year"], orient="index")
+        .reset_index()
+        .rename(columns={"index": "year"})
+    )
+    yearly_data["year"] = pd.to_numeric(yearly_data["year"], errors="coerce")
+    yearly_data = yearly_data.dropna(subset=["year"])
+    yearly_data["year"] = yearly_data["year"].astype(int)
+
+    keyword_data = (
+        yearly_data[["year", "keyword_matches"]]
+        .set_index("year")["keyword_matches"]
+        .apply(pd.Series)
+        .stack()
+        .reset_index()
+        .rename(columns={"level_0": "year", "level_1": "keyword", 0: "count"})
+    )
+    keyword_data["count"] = pd.to_numeric(
+        keyword_data["count"], errors="coerce"
+    ).fillna(0)
+
     print("Generating spam trend plots...")
 
     # Generate plots based on type
     if args.plot_type in ["timeline", "all"]:
         timeline_file = output_dir / "timeline.png"
-        create_spam_timeline(spam_data, timeline_file, args.title, args.display)
+        create_spam_timeline(monthly_data, timeline_file, args.title, args.display)
 
     if args.plot_type in ["keywords", "all"]:
         keywords_file = output_dir / "keywords.png"
-        create_keyword_breakdown(spam_data, keywords_file, args.title, args.display)
+        create_keyword_breakdown(keyword_data, keywords_file, args.title, args.display)
 
     if args.plot_type in ["heatmap", "all"]:
         heatmap_file = output_dir / "heatmap.png"
-        create_yearly_heatmap(spam_data, heatmap_file, args.title, args.display)
+        create_yearly_heatmap(
+            yearly_data, keyword_data, heatmap_file, args.title, args.display
+        )
 
 
 if __name__ == "__main__":

@@ -5,7 +5,6 @@ steps:
   - name: extract dataset
     action: extract
     params:
-      format: json
       output: data/extract/all.json
   - name: plot wsu volume
     action: plot_temporal
@@ -23,14 +22,12 @@ steps:
       output: data/extract/wsu.json
       domain: wsu.edu
       has_body: true
-      format: json
   - name: temporal analysis yearly
     action: analyze_temporal
     params:
       input: data/extract/wsu.json
       analysis: year
-      output: data/analysis/wsu/yearly.csv
-      format: csv
+      output: data/analysis/wsu/yearly.json
   - name: temporal analysis monthly 2016
     action: analyze_temporal
     params:
@@ -38,7 +35,6 @@ steps:
       analysis: month
       year: 2016
       output: data/analysis/wsu/monthly/2016.json
-      format: json
   - name: unsubscribe analysis wsu
     action: analyze_domains
     params:
@@ -47,4 +43,3 @@ steps:
       pattern: unsubscribe
       threshold: 0.85
       output: data/analysis/wsu/unsubscribe.json
-      format: json

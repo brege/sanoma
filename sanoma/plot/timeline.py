@@ -3,9 +3,7 @@
 Temporal plotting tool for sanoma analysis results
 """
 
-import json
 import argparse
-from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -13,52 +11,28 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
-def parse_email_date(date_str):
-    """Parse email date string to datetime object"""
-    try:
-        return datetime.strptime(date_str[:19], "%Y-%m-%d %H:%M:%S")
-    except (ValueError, TypeError):
-        return None
-
-
 def create_year_over_year_histogram(
     emails, output_file, title="Email Volume", display_method="save"
 ):
     """Create year-over-year stacked histogram by month"""
     # Parse dates and create month-year data
-    monthly_data = {}
-
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            year = date_obj.year
-            month = date_obj.month
-
-            if year not in monthly_data:
-                monthly_data[year] = {i: 0 for i in range(1, 13)}
-            monthly_data[year][month] += 1
-
-    if not monthly_data:
+    parsed_emails = emails.dropna(subset=["date_parsed"])
+    if parsed_emails.empty:
         print("No valid dates found in dataset")
         return
 
-    # Convert to DataFrame for easier plotting
-    df_data = []
-    for year, months in monthly_data.items():
-        for month, count in months.items():
-            df_data.append(
-                {
-                    "year": year,
-                    "month": month,
-                    "count": count,
-                    "month_name": datetime(2000, month, 1).strftime("%b"),
-                }
-            )
-
-    df = pd.DataFrame(df_data)
+    counts = (
+        parsed_emails.assign(
+            year=parsed_emails["date_parsed"].dt.year,
+            month_name=parsed_emails["date_parsed"].dt.strftime("%b"),
+        )
+        .groupby(["year", "month_name"])
+        .size()
+        .reset_index(name="count")
+    )
 
     # Create pivot table for stacked histogram
-    pivot_df = df.pivot_table(
+    pivot_df = counts.pivot_table(
         index="month_name", columns="year", values="count", fill_value=0
     )
 
@@ -121,23 +95,18 @@ def create_simple_timeline(
     emails, output_file, title="Email Timeline", display_method="save"
 ):
     """Create a simple timeline plot of email volume over time"""
-    # Parse dates and aggregate by month
-    monthly_counts = {}
-
-    for email in emails:
-        date_obj = parse_email_date(email.get("date", ""))
-        if date_obj:
-            month_key = date_obj.strftime("%Y-%m")
-            monthly_counts[month_key] = monthly_counts.get(month_key, 0) + 1
-
-    if not monthly_counts:
+    parsed_emails = emails.dropna(subset=["date_parsed"])
+    if parsed_emails.empty:
         print("No valid dates found in dataset")
         return
 
-    # Sort by date
-    sorted_months = sorted(monthly_counts.items())
-    dates = [datetime.strptime(month, "%Y-%m") for month, _ in sorted_months]
-    counts = [count for _, count in sorted_months]
+    month_counts = (
+        parsed_emails.groupby(parsed_emails["date_parsed"].dt.to_period("M"))
+        .size()
+        .sort_index()
+    )
+    dates = [period.to_timestamp() for period in month_counts.index]
+    counts = month_counts.values
 
     # Create the plot
     fig, ax = plt.subplots(figsize=(14, 6))
@@ -206,23 +175,30 @@ def main():
     output_dir.mkdir(exist_ok=True)
 
     # Load emails
-    with open(args.input_file, "r") as f:
-        emails = json.load(f)
+    emails = pd.read_json(args.input_file)
+    required_columns = {"date", "to"}
+    missing_columns = required_columns.difference(emails.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Missing required columns in JSON: {', '.join(sorted(missing_columns))}"
+        )
+    date_series = pd.to_datetime(
+        emails["date"].astype(str).str.slice(0, 19),
+        format="%Y-%m-%d %H:%M:%S",
+        errors="coerce",
+    )
+    emails = emails.assign(date_parsed=date_series)
 
     # Filter by domain if specified
     if args.filter_domain:
-        filtered_emails = []
-        for email in emails:
-            to_field = email.get("to", "").lower()
-            if args.filter_domain.lower() in to_field:
-                filtered_emails.append(email)
-        emails = filtered_emails
+        to_lower = emails["to"].astype(str).str.lower()
+        emails = emails[to_lower.str.contains(args.filter_domain.lower(), na=False)]
         print(
-            f"Filtered to {len(emails)} emails with recipient domain "
+            f"Filtered to {len(emails.index)} emails with recipient domain "
             f"'{args.filter_domain}'"
         )
 
-    if not emails:
+    if emails.empty:
         print("No emails to plot after filtering")
         return
 
