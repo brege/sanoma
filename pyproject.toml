@@ -3,7 +3,7 @@ name = "sanoma"
 version = "0.2.0"
 description = "Data analysis interface for Thunderbird"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "PyYAML>=6.0.0",
   "pandas>=2.0.0",
@@ -20,11 +20,11 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools>=68.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
 
-[tool.setuptools]
-packages = ["sanoma", "sanoma.lib", "sanoma.analysis", "sanoma.plot"]
+[tool.hatch.build.targets.wheel]
+packages = ["sanoma"]
 
 [tool.ruff]
 line-length = 88

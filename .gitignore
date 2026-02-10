@@ -7,12 +7,9 @@ config.y*ml
 config.yml
 
 # python
-.venv
-*.egg-info
 *.pyc
 *.pyo
 __pycache__
-*/__pycache__/*
 
 # jupyter
 .jupyter_ystore.db
