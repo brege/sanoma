@@ -13,7 +13,7 @@ This installs the `sanoma` command globally without creating a local venv.
 
 ### Thunderbird Profile
 1. Ensure your Thunderbird profile is indexed.
-   ![Thunderbird Index Settings](docs/img/screenshot.png)
+   <img src="docs/img/screenshot.png" alt="Thunderbird Index Settings" />
 
 2. Copy your Thunderbird profile to `data/profiles/`:
    ```bash
