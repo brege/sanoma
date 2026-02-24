@@ -17,6 +17,7 @@ sanoma = "sanoma.main:main"
 [project.optional-dependencies]
 dev = [
   "ruff>=0.6.0",
+  "ty>=0.0.18",
 ]
 
 [build-system]
@@ -25,6 +26,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["sanoma"]
+
+[tool.ty.src]
+include = ["sanoma"]
+exclude = ["docs", "data"]
+respect-ignore-files = true
 
 [tool.ruff]
 line-length = 88

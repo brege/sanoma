@@ -4,9 +4,15 @@ Temporal analysis tool using the sanoma CLI API and lib output adapters
 """
 
 import argparse
+from typing import cast
+
 import pandas as pd
 
 from sanoma.lib.output import write_data  # noqa: E402
+
+
+AnalysisRow = dict[str, int | float | str]
+SummaryAnalysis = dict[str, object]
 
 
 def build_group_stats(grouped):
@@ -100,6 +106,7 @@ def main():
     ).dropna(subset=["date_parsed"])
 
     # Perform analysis based on type
+    analysis_data: list[AnalysisRow] | SummaryAnalysis
     if args.analysis == "year":
         results = analyze_by_year(emails)
         analysis_data = [
@@ -178,7 +185,7 @@ def main():
         analysis_data = {
             "dataset_info": {
                 "total_emails": len(emails),
-                "emails_with_body": sum(1 for e in emails if e.get("has_body")),
+                "emails_with_body": int(emails["has_body_bool"].sum()),
                 "date_range": {
                     "start": start_date.isoformat() if start_date else None,
                     "end": end_date.isoformat() if end_date else None,
@@ -195,30 +202,40 @@ def main():
     else:
         # Console output
         if args.analysis == "summary":
-            info = analysis_data["dataset_info"]
+            summary_data = cast(SummaryAnalysis, analysis_data)
+            info = cast(dict[str, object], summary_data["dataset_info"])
+            date_range = cast(dict[str, str | None], info["date_range"])
+            start = date_range["start"]
+            end = date_range["end"]
             print("Temporal Analysis Summary:")
             print(f"  Total emails: {info['total_emails']}")
             print(f"  With bodies: {info['emails_with_body']}")
-            if info["date_range"]["start"]:
-                print(
-                    f"  Date range: {info['date_range']['start'][:10]} "
-                    f"to {info['date_range']['end'][:10]}"
-                )
+            if start is not None and end is not None:
+                print(f"  Date range: {start[:10]} to {end[:10]}")
 
             print("\nTop 5 years by volume:")
+            by_year = cast(dict[int, dict[str, int]], summary_data["by_year"])
             yearly_sorted = sorted(
-                analysis_data["by_year"].items(),
+                by_year.items(),
                 key=lambda x: x[1]["total"],
                 reverse=True,
             )
             for year, data in yearly_sorted[:5]:
                 print(f"  {year}: {data['total']} emails")
         else:
+            rows = cast(list[AnalysisRow], analysis_data)
             print(f"Temporal Analysis ({args.analysis}):")
-            for item in analysis_data:
-                key = list(item.keys())[0]
+            for item in rows:
+                if "year" in item:
+                    period = item["year"]
+                elif "month" in item:
+                    period = item["month"]
+                elif "weekday" in item:
+                    period = item["weekday"]
+                else:
+                    period = item["hour"]
                 print(
-                    f"  {item[key]}: {item['total_emails']} emails "
+                    f"  {period}: {item['total_emails']} emails "
                     f"({item['body_percentage']:.1f}% with bodies)"
                 )
 
