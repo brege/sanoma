@@ -1,6 +1,8 @@
 # sanoma
 
-Visualizing and analyzing email trends with YAML workflows and fast Python scripts.  Export Thunderbird's Gloda database to an mbox JSON for convenient slicing and filtering.
+Visualizing and analyzing email trends with YAML workflows and fast Python scripts. Export Thunderbird's Gloda database to JSON for convenient slicing and filtering.
+
+See [brege.org/sanoma](https://brege.org/sanoma) for in-depth analysis.
 
 ## Setup
 
@@ -22,15 +24,18 @@ This installs the `sanoma` command globally without creating a local venv.
    </details>
 
 2. Copy your Thunderbird profile to `data/profiles/`:
+
    ```bash
    cp -r ~/.thunderbird/*.default-release data/profiles/
    ```
-   You will need to close Thunderbird because it locks the database while it's running. This profile looks like `xyzabc12.default-release`.
+   
+   You will need to close Thunderbird because it locks the database while it's running. The profile directory name looks like `xyzabc12.default-release`.
 
 3. Create `config.yaml` from `config.example.yaml` and add the `xyzabc12.default-release` profile path.
 
 ### Performance
-Since the tool uses direct "Gloda" (**Glo**bal **Da**tabase) access, the JSON extraction takes me roughly 2 seconds to extract 35K emails using a 2015 netbook.
+
+Since the tool uses direct "Gloda" (**Glo**bal **Da**tabase) access, JSON extraction takes roughly 2 seconds for 35K emails on a 2015 netbook.
 
 ## Workflows
 
@@ -217,7 +222,7 @@ uv run sanoma/plot/spam.py \
 
 </details>
 
-### 2.3) Spam Heatmap: the curse of Satisfaction Surveys
+### 2.3) Spam Heatmap: The Curse of Satisfaction Surveys
 
 The heatmap highlights long-running persistence of recurring keyword families by year.
 
